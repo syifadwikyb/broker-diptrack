@@ -1,27 +1,46 @@
-const aedes = require('aedes')();
-const server = require('net').createServer(aedes.handle);
+import Aedes from 'aedes';
+import { createServer } from 'net';
+import httpServer from 'http';
+import ws from 'websocket-stream';
+
+const aedes = new Aedes();
+
+// =================================================
+// PINTU 1: TCP (Port 1883) - Untuk Hardware & Backend
+// =================================================
 const port = 1883;
+const server = createServer(aedes.handle);
 
-// Menjalankan server
 server.listen(port, function () {
-  console.log(`Server siap menerima data di port: ${port}`);
+  console.log(`🚀 [TCP] Pintu Hardware siap di port: ${port}`);
 });
 
-// Ketika ada yang connect
+// =================================================
+// PINTU 2: WebSocket (Port 8888) - Untuk HP & Frontend
+// =================================================
+const wsPort = 8888;
+const httpServerInstance = httpServer.createServer();
+
+// Hubungkan WebSocket ke Aedes
+ws.createServer({ server: httpServerInstance }, aedes.handle);
+
+httpServerInstance.listen(wsPort, function () {
+  console.log(`🌍 [WS]  Pintu Browser/HP siap di port: ${wsPort}`);
+});
+
+// =================================================
+// LOGGING
+// =================================================
 aedes.on('client', function (client) {
-  console.log(`Client Terhubung: ${client ? client.id : 'Unknown'}`);
+  console.log(`🔌 Client Terhubung: ${client ? client.id : 'Unknown'}`);
 });
 
-// Ketika ada yang disconnect
 aedes.on('clientDisconnect', function (client) {
-  console.log(`Client Terputus : ${client ? client.id : 'Unknown'}`);
+  console.log(`❌ Client Terputus : ${client ? client.id : 'Unknown'}`);
 });
 
-// Saat ada yang mengirim data
 aedes.on('publish', function (packet, client) {
   if (client) {
-    console.log(`📨 [${client.id}] Kirim ke Topik: ${packet.topic}`);
-    console.log(`   Isi: ${packet.payload.toString()}`);
-    console.log('--------------------------------------------------');
+    console.log(`📨 [${client.id}] Topik: ${packet.topic}`);
   }
 });
