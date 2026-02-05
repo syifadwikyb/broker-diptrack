@@ -17,7 +17,7 @@ const httpServerInstance = httpServer.createServer();
 ws.createServer({ server: httpServerInstance }, aedes.handle);
 
 httpServerInstance.listen(wsPort, '0.0.0.0', function () {
-  console.log(`Pintu Browser: ${wsPort}`);
+  console.log(`[WS] Pintu Browser: ${wsPort}`);
 });
 
 aedes.on('client', function (client) {
